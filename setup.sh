@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# XDMS Setup Script
-# This script sets up the XDMS project with uv package manager
+# MDMSGA Setup Script
+# This script sets up the MDMSGA project with uv package manager
 
 set -e
 
-echo "Setting up XDMS - Modern Dealer Management System"
+echo "Setting up MDMSGA - Modern Dealer Management System"
 echo "=================================================="
 
 # Check if uv is installed
@@ -64,15 +64,15 @@ echo "Setting up pre-commit hooks..."
 uv run pre-commit install
 
 echo ""
-echo "XDMS setup completed successfully!"
+echo "MDMSGA setup completed successfully!"
 echo ""
 echo "Next steps:"
 echo "1. Edit .env file with your database and other configuration"
 echo "2. Set up PostgreSQL database"
 echo "3. Set up Valkey server (Redis-compatible)"
 echo "4. Run database migrations: alembic upgrade head"
-echo "5. Create superuser: python -m xdms.cli create-superuser"
-echo "6. Start development server: uvicorn xdms.main:app --reload"
+echo "5. Create superuser: python -m mdmsga.cli create-superuser"
+echo "6. Start development server: uvicorn mdmsga.main:app --reload"
 echo ""
 echo "Documentation:"
 echo "- API docs: http://localhost:8000/docs"

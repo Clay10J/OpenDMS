@@ -4,20 +4,20 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: xdms_postgres
+    container_name: mdmsga_postgres
     environment:
-      POSTGRES_DB: xdms_db
-      POSTGRES_USER: xdms_user
-      POSTGRES_PASSWORD: xdms_password
+      POSTGRES_DB: mdmsga_db
+      POSTGRES_USER: mdmsga_user
+      POSTGRES_PASSWORD: mdmsga_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - xdms_network
+      - mdmsga_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U xdms_user -d xdms_db"]
+      test: ["CMD-SHELL", "pg_isready -U mdmsga_user -d mdmsga_db"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -25,30 +25,30 @@ services:
   # Valkey Cache (Redis-compatible)
   valkey:
     image: valkey/valkey:7-alpine
-    container_name: xdms_valkey
+    container_name: mdmsga_valkey
     ports:
       - "6379:6379"
     volumes:
       - valkey_data:/data
     networks:
-      - xdms_network
+      - mdmsga_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # XDMS API
+  # MDMSGA API
   api:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: xdms_api
+    container_name: mdmsga_api
     environment:
       - POSTGRES_SERVER=postgres
-      - POSTGRES_USER=xdms_user
-      - POSTGRES_PASSWORD=xdms_password
-      - POSTGRES_DB=xdms_db
+      - POSTGRES_USER=mdmsga_user
+      - POSTGRES_PASSWORD=mdmsga_password
+      - POSTGRES_DB=mdmsga_db
       - POSTGRES_PORT=5432
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
@@ -66,20 +66,20 @@ services:
       valkey:
         condition: service_healthy
     networks:
-      - xdms_network
-    command: uvicorn xdms.main:app --host 0.0.0.0 --port 8000 --reload
+      - mdmsga_network
+    command: uvicorn mdmsga.main:app --host 0.0.0.0 --port 8000 --reload
 
   # Celery Worker
   celery_worker:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: xdms_celery_worker
+    container_name: mdmsga_celery_worker
     environment:
       - POSTGRES_SERVER=postgres
-      - POSTGRES_USER=xdms_user
-      - POSTGRES_PASSWORD=xdms_password
-      - POSTGRES_DB=xdms_db
+      - POSTGRES_USER=mdmsga_user
+      - POSTGRES_PASSWORD=mdmsga_password
+      - POSTGRES_DB=mdmsga_db
       - POSTGRES_PORT=5432
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
@@ -95,20 +95,20 @@ services:
       valkey:
         condition: service_healthy
     networks:
-      - xdms_network
-    command: celery -A xdms.celery_app worker --loglevel=info
+      - mdmsga_network
+    command: celery -A mdmsga.celery_app worker --loglevel=info
 
   # Celery Beat (Scheduler)
   celery_beat:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: xdms_celery_beat
+    container_name: mdmsga_celery_beat
     environment:
       - POSTGRES_SERVER=postgres
-      - POSTGRES_USER=xdms_user
-      - POSTGRES_PASSWORD=xdms_password
-      - POSTGRES_DB=xdms_db
+      - POSTGRES_USER=mdmsga_user
+      - POSTGRES_PASSWORD=mdmsga_password
+      - POSTGRES_DB=mdmsga_db
       - POSTGRES_PORT=5432
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
@@ -124,13 +124,13 @@ services:
       valkey:
         condition: service_healthy
     networks:
-      - xdms_network
-    command: celery -A xdms.celery_app beat --loglevel=info
+      - mdmsga_network
+    command: celery -A mdmsga.celery_app beat --loglevel=info
 
 volumes:
   postgres_data:
   valkey_data:
 
 networks:
-  xdms_network:
+  mdmsga_network:
     driver: bridge

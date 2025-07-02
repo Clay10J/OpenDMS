@@ -38,4 +38,4 @@ RUN mkdir -p uploads
 EXPOSE 8000
 
 # Activate virtual environment and run the application
-CMD ["uv", "run", "uvicorn", "xdms.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+CMD ["uv", "run", "uvicorn", "mdmsga.main:app", "--host", "0.0.0.0", "--port", "8000"] 

@@ -1,10 +1,10 @@
-# XDMS System Notes
+# MDMSGA System Notes
 
-Internal technical documentation for the XDMS (Dealer Management System) project.
+Internal technical documentation for the MDMSGA (Dealer Management System) project.
 
 ## Architecture Overview
 
-XDMS is a modern DMS built to compete with CDK Global using Python/FastAPI stack.
+MDMSGA is a modern DMS built to compete with CDK Global using Python/FastAPI stack.
 
 ### Core Stack
 
@@ -155,7 +155,7 @@ XDMS is a modern DMS built to compete with CDK Global using Python/FastAPI stack
 
 ### HTMX Integration
 
-XDMS uses HTMX for dynamic, server-side rendered interfaces that provide:
+MDMSGA uses HTMX for dynamic, server-side rendered interfaces that provide:
 
 - **Real-time Updates**: Dynamic content without page reloads
 - **Mobile-First Design**: Responsive layouts with touch optimization
@@ -165,7 +165,7 @@ XDMS uses HTMX for dynamic, server-side rendered interfaces that provide:
 ### Template Structure
 
 ```text
-xdms/templates/
+mdmsga/templates/
 ├── base.html              # Base template with navigation
 ├── dashboard.html         # Main dashboard with stats
 ├── inventory.html         # Vehicle inventory management
@@ -177,7 +177,7 @@ xdms/templates/
 ### Static Assets
 
 ```text
-xdms/static/
+mdmsga/static/
 ├── css/
 │   └── app.css           # Custom styles with mobile optimizations
 ├── manifest.json         # PWA manifest
@@ -237,7 +237,7 @@ xdms/static/
 
 ```bash
 # Application
-APP_NAME=XDMS
+APP_NAME=MDMSGA
 DEBUG=true
 API_V1_STR=/api/v1
 
@@ -248,9 +248,9 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 
 # Database
 POSTGRES_SERVER=localhost
-POSTGRES_USER=xdms_user
-POSTGRES_PASSWORD=xdms_password
-POSTGRES_DB=xdms_db
+POSTGRES_USER=mdmsga_user
+POSTGRES_PASSWORD=mdmsga_password
+POSTGRES_DB=mdmsga_db
 
 # Valkey (Redis-compatible)
 VALKEY_HOST=localhost
@@ -279,7 +279,7 @@ ENABLE_REAL_TIME_UPDATES=true
 - **PWA Manifest**: Configured for mobile installation
 - **Service Worker**: Handles caching and offline functionality
 
-### Settings Class (xdms/core/config.py)
+### Settings Class (mdmsga/core/config.py)
 
 - Pydantic BaseSettings for validation
 - Auto-assembly of connection strings
@@ -369,7 +369,7 @@ indent-style = "space"
 
 ### Networks
 
-- `xdms_network` - Internal communication
+- `mdmsga_network` - Internal communication
 
 ## Deployment Considerations
 
@@ -483,13 +483,13 @@ docker-compose logs api
 docker-compose logs valkey
 
 # Database
-docker-compose exec postgres psql -U xdms_user -d xdms_db
+docker-compose exec postgres psql -U mdmsga_user -d mdmsga_db
 
 # Valkey
 docker-compose exec valkey redis-cli ping
 
 # Application
-uvicorn xdms.main:app --reload --log-level debug
+uvicorn mdmsga.main:app --reload --log-level debug
 ```
 
 ## Performance Notes

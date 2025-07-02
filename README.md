@@ -1,4 +1,4 @@
-# XDMS - Modern Dealer Management System
+# MDMSGA - Modern Dealer Management System
 
 A next-generation Dealer Management System designed to compete with CDK Global, built with modern Python technologies and cloud-native architecture.
 
@@ -68,7 +68,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd xdms
+cd mdmsga
 
 # Create virtual environment and install dependencies
 uv venv
@@ -96,7 +96,7 @@ cp .env.example .env
 alembic upgrade head
 
 # Create initial superuser
-python -m xdms.cli create-superuser
+python -m mdmsga.cli create-superuser
 ```
 
 ## Running the Application
@@ -105,20 +105,20 @@ python -m xdms.cli create-superuser
 
 ```bash
 # Start the FastAPI development server
-uvicorn xdms.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn mdmsga.main:app --reload --host 0.0.0.0 --port 8000
 
 # Start Celery worker (in another terminal)
-celery -A xdms.celery_app worker --loglevel=info
+celery -A mdmsga.celery_app worker --loglevel=info
 
 # Start Celery beat for scheduled tasks (in another terminal)
-celery -A xdms.celery_app beat --loglevel=info
+celery -A mdmsga.celery_app beat --loglevel=info
 ```
 
 ### Production
 
 ```bash
 # Using Gunicorn
-gunicorn xdms.main:app -w 4 -k uvicorn.workers.UvicornWorker
+gunicorn mdmsga.main:app -w 4 -k uvicorn.workers.UvicornWorker
 
 # Using Docker
 docker-compose up -d
@@ -139,7 +139,7 @@ Once the server is running, visit:
 pytest
 
 # Run with coverage
-pytest --cov=xdms
+pytest --cov=mdmsga
 
 # Run specific test file
 pytest tests/test_auth.py
@@ -154,13 +154,13 @@ pytest -v
 
 ```bash
 # Format and lint code
-ruff check --fix xdms tests
+ruff check --fix mdmsga tests
 
 # Format code only
-ruff format xdms tests
+ruff format mdmsga tests
 
 # Type checking
-mypy xdms
+mypy mdmsga
 ```
 
 ### Pre-commit Hooks
@@ -189,8 +189,8 @@ alembic downgrade -1
 ## Project Structure
 
 ```
-xdms/
-├── xdms/                    # Main application package
+mdmsga/
+├── mdmsga/                    # Main application package
 │   ├── api/                # API routes and endpoints
 │   │   ├── v1/            # API version 1
 │   │   └── deps.py        # Dependencies and middleware
