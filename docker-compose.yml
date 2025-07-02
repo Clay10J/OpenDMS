@@ -1,0 +1,136 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: xdms_postgres
+    environment:
+      POSTGRES_DB: xdms_db
+      POSTGRES_USER: xdms_user
+      POSTGRES_PASSWORD: xdms_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - xdms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xdms_user -d xdms_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Valkey Cache (Redis-compatible)
+  valkey:
+    image: valkey/valkey:7-alpine
+    container_name: xdms_valkey
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    networks:
+      - xdms_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # XDMS API
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: xdms_api
+    environment:
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=xdms_user
+      - POSTGRES_PASSWORD=xdms_password
+      - POSTGRES_DB=xdms_db
+      - POSTGRES_PORT=5432
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
+      - VALKEY_DB=0
+      - DEBUG=true
+      - SECRET_KEY=your-super-secret-key-here-change-in-production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - xdms_network
+    command: uvicorn xdms.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker
+  celery_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: xdms_celery_worker
+    environment:
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=xdms_user
+      - POSTGRES_PASSWORD=xdms_password
+      - POSTGRES_DB=xdms_db
+      - POSTGRES_PORT=5432
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
+      - VALKEY_DB=0
+      - DEBUG=true
+      - SECRET_KEY=your-super-secret-key-here-change-in-production
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - xdms_network
+    command: celery -A xdms.celery_app worker --loglevel=info
+
+  # Celery Beat (Scheduler)
+  celery_beat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: xdms_celery_beat
+    environment:
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=xdms_user
+      - POSTGRES_PASSWORD=xdms_password
+      - POSTGRES_DB=xdms_db
+      - POSTGRES_PORT=5432
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
+      - VALKEY_DB=0
+      - DEBUG=true
+      - SECRET_KEY=your-super-secret-key-here-change-in-production
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - xdms_network
+    command: celery -A xdms.celery_app beat --loglevel=info
+
+volumes:
+  postgres_data:
+  valkey_data:
+
+networks:
+  xdms_network:
+    driver: bridge
