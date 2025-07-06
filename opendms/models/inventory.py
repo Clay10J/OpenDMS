@@ -85,6 +85,8 @@ class Vehicle(Base):
     images = relationship(
         "VehicleImage", back_populates="vehicle", cascade="all, delete-orphan"
     )
+    sales = relationship("Sale", back_populates="vehicle")
+    service_appointments = relationship("ServiceAppointment", back_populates="vehicle")
 
     def __repr__(self) -> str:
         return f"<Vehicle(id={self.id}, vin='{self.vin}', make='{self.make}', model='{self.model}')>"

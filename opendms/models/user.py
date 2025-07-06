@@ -6,7 +6,16 @@ import enum
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from opendms.core.database import Base
@@ -51,7 +60,8 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
 
     # Relationships
-    dealership_id = Column(Integer, nullable=True)  # Foreign key to dealership
+    dealership_id = Column(Integer, ForeignKey("dealerships.id"), nullable=True)
+    dealership = relationship("Dealership", back_populates="users")
 
     @property
     def full_name(self) -> str:

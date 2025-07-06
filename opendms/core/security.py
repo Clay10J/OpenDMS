@@ -5,18 +5,24 @@ Security utilities for authentication and authorization.
 from datetime import datetime, timedelta
 from typing import Any, Optional, Union
 
-from fastapi import HTTPException, status
-from jose import jwt
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
 from opendms.core.config import settings
+from opendms.core.database import get_db
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
 
 def create_access_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
     """
     Create JWT access token.
@@ -43,7 +49,7 @@ def create_access_token(
 
 
 def create_refresh_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
     """
     Create JWT refresh token.
@@ -81,11 +87,11 @@ def verify_token(token: str) -> Optional[str]:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        subject: str = payload.get("sub")
+        subject = payload.get("sub")
         if subject is None:
             return None
-        return subject
-    except jwt.JWTError:
+        return str(subject)
+    except JWTError:
         return None
 
 
@@ -139,13 +145,13 @@ def authenticate_user(db, email: str, password: str):
     return user
 
 
-def get_current_user(db, token: str):
+def get_current_user(request: Request, db: Session = Depends(get_db)):
     """
-    Get current user from JWT token.
+    Get current user from JWT token in cookie.
 
     Args:
+        request: FastAPI request object
         db: Database session
-        token: JWT token
 
     Returns:
         User object if token valid
@@ -162,6 +168,15 @@ def get_current_user(db, token: str):
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+    # Get token from cookie
+    token = request.cookies.get("access_token")
+    if not token:
+        raise credentials_exception
+
+    # Remove "Bearer " prefix if present
+    if token.startswith("Bearer "):
+        token = token[7:]
+
     subject = verify_token(token)
     if subject is None:
         raise credentials_exception
@@ -173,13 +188,13 @@ def get_current_user(db, token: str):
     return user
 
 
-def get_current_active_user(db, token: str):
+def get_current_active_user(request: Request, db: Session = Depends(get_db)):
     """
-    Get current active user from JWT token.
+    Get current active user from JWT token in cookie.
 
     Args:
+        request: FastAPI request object
         db: Database session
-        token: JWT token
 
     Returns:
         Active User object if token valid
@@ -187,7 +202,7 @@ def get_current_active_user(db, token: str):
     Raises:
         HTTPException: If token invalid, user not found, or user inactive
     """
-    user = get_current_user(db, token)
-    if not user.is_active:
+    user = get_current_user(request, db)
+    if not getattr(user, "is_active", True):
         raise HTTPException(status_code=400, detail="Inactive user")
     return user

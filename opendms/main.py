@@ -9,19 +9,19 @@ from contextlib import asynccontextmanager
 from typing import Any, Dict
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Request, status
-from fastapi.exceptions import RequestValidationError
+from fastapi import Depends, FastAPI, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
 from opendms.api.v1.api import api_router
 from opendms.core.config import settings
-from opendms.core.database import Base, engine
+from opendms.core.database import Base, engine, get_db
 from opendms.core.security import get_current_user
-from opendms.models import customer, dealership, inventory, sale, service, user
+from opendms.models import user
 
 # Configure logging
 logging.basicConfig(
@@ -76,11 +76,11 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api/v1")
 
 
-# Root route - redirect to dashboard
+# Root route - redirect to login page
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     """Root endpoint."""
-    return RedirectResponse(url="/dashboard")
+    return RedirectResponse(url="/auth/login")
 
 
 # Dashboard route
@@ -266,6 +266,52 @@ async def new_service(
 async def login_page(request: Request):
     """Login page endpoint."""
     return templates.TemplateResponse("auth/login.html", {"request": request})
+
+
+@app.post("/auth/login", response_class=HTMLResponse)
+async def login_form(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    """Login form handler."""
+    from datetime import timedelta
+
+    from opendms.core.security import authenticate_user, create_access_token
+
+    # Authenticate user
+    user = authenticate_user(db, email=email, password=password)
+    if not user:
+        return templates.TemplateResponse(
+            "auth/login.html",
+            {"request": request, "error": "Invalid email or password"},
+            status_code=401,
+        )
+
+    if not getattr(user, "is_active", True):
+        return templates.TemplateResponse(
+            "auth/login.html",
+            {"request": request, "error": "Account is inactive"},
+            status_code=401,
+        )
+
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        subject=user.id, expires_delta=access_token_expires
+    )
+
+    # Redirect to dashboard with token
+    response = RedirectResponse(url="/dashboard", status_code=302)
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        max_age=1800,  # 30 minutes
+        samesite="lax",
+    )
+    return response
 
 
 @app.get("/auth/register", response_class=HTMLResponse)

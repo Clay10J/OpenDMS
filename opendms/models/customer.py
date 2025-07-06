@@ -54,6 +54,8 @@ class Customer(Base):
     notes = relationship(
         "CustomerNote", back_populates="customer", cascade="all, delete-orphan"
     )
+    sales = relationship("Sale", back_populates="customer")
+    service_appointments = relationship("ServiceAppointment", back_populates="customer")
 
     @property
     def full_name(self) -> str:

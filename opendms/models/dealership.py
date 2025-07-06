@@ -63,6 +63,12 @@ class Dealership(Base):
 
     # Relationships
     users = relationship("User", back_populates="dealership")
+    customers = relationship("Customer", back_populates="dealership")
+    vehicles = relationship("Vehicle", back_populates="dealership")
+    sales = relationship("Sale", back_populates="dealership")
+    service_appointments = relationship(
+        "ServiceAppointment", back_populates="dealership"
+    )
 
     def __repr__(self) -> str:
         return f"<Dealership(id={self.id}, name='{self.name}', dealer_number='{self.dealer_number}')>"
