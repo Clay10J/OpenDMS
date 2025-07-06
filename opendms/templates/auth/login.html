@@ -1,0 +1,141 @@
+{% extends "base.html" %} {% block title %}Login - OpenDMS{% endblock %} {% block
+content %}
+<div
+  class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <div
+        class="mx-auto h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center"
+      >
+        <span class="text-white text-2xl font-bold">XD</span>
+      </div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Sign in to OpenDMS
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Dealer Management System
+      </p>
+    </div>
+
+    <form
+      class="mt-8 space-y-6"
+      hx-post="/auth/login"
+      hx-target="body"
+      hx-swap="outerHTML"
+    >
+      <!-- Error Messages -->
+      <div id="error-messages" class="hidden">
+        <div class="bg-red-50 border border-red-200 rounded-md p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <span class="text-red-400">⚠️</span>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">Login Failed</h3>
+              <div class="mt-2 text-sm text-red-700">
+                <p id="error-text"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-md shadow-sm -space-y-px">
+        <div>
+          <label for="email" class="sr-only">Email address</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+            placeholder="Email address"
+          />
+        </div>
+        <div>
+          <label for="password" class="sr-only">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+            placeholder="Password"
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <input
+            id="remember-me"
+            name="remember-me"
+            type="checkbox"
+            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+          <label for="remember-me" class="ml-2 block text-sm text-gray-900">
+            Remember me
+          </label>
+        </div>
+
+        <div class="text-sm">
+          <a
+            href="/auth/forgot-password"
+            class="font-medium text-primary-600 hover:text-primary-500"
+          >
+            Forgot your password?
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+            <span class="h-5 w-5 text-primary-500 group-hover:text-primary-400">
+              🔐
+            </span>
+          </span>
+          Sign in
+        </button>
+      </div>
+
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          Don't have an account?
+          <a
+            href="/auth/register"
+            class="font-medium text-primary-600 hover:text-primary-500"
+          >
+            Contact your administrator
+          </a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Handle form submission errors
+  document.body.addEventListener("htmx:responseError", function (event) {
+    if (event.detail.xhr.status === 401) {
+      const errorDiv = document.getElementById("error-messages");
+      const errorText = document.getElementById("error-text");
+      errorText.textContent = "Invalid email or password. Please try again.";
+      errorDiv.classList.remove("hidden");
+    }
+  });
+
+  // Clear errors when user starts typing
+  document.getElementById("email").addEventListener("input", function () {
+    document.getElementById("error-messages").classList.add("hidden");
+  });
+
+  document.getElementById("password").addEventListener("input", function () {
+    document.getElementById("error-messages").classList.add("hidden");
+  });
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
-# MDMSGA Quick Start Guide
+# OpenDMS Quick Start Guide
 
-Get MDMSGA running in minutes with this quick start guide.
+Get OpenDMS running in minutes with this quick start guide.
 
 ## Option 1: Using Docker (Recommended)
 
@@ -15,7 +15,7 @@ Get MDMSGA running in minutes with this quick start guide.
 
    ```bash
    git clone <repository-url>
-   cd mdmsga
+   cd opendms
    cp env.example .env
    ```
 
@@ -34,7 +34,7 @@ Get MDMSGA running in minutes with this quick start guide.
 4. **Create superuser**
 
    ```bash
-   docker-compose exec api python -m mdmsga.cli create-superuser
+   docker-compose exec api python -m opendms.cli create-superuser
    ```
 
 5. **Access the application**
@@ -88,13 +88,13 @@ Get MDMSGA running in minutes with this quick start guide.
 5. **Create superuser**
 
    ```bash
-   python -m mdmsga.cli create-superuser
+   python -m opendms.cli create-superuser
    ```
 
 6. **Start development server**
 
    ```bash
-   uvicorn mdmsga.main:app --reload
+   uvicorn opendms.main:app --reload
    ```
 
 7. **Access the application**
@@ -108,15 +108,15 @@ Get MDMSGA running in minutes with this quick start guide.
 
    ```bash
    # Terminal 1: Celery worker
-   celery -A mdmsga.celery_app worker --loglevel=info
+   celery -A opendms.celery_app worker --loglevel=info
 
    # Terminal 2: Celery beat (scheduler)
-   celery -A mdmsga.celery_app beat --loglevel=info
+   celery -A opendms.celery_app beat --loglevel=info
    ```
 
 ## Web Interface
 
-MDMSGA includes a modern HTMX-based web interface that works on desktop and mobile devices.
+OpenDMS includes a modern HTMX-based web interface that works on desktop and mobile devices.
 
 ### Features
 
@@ -150,7 +150,7 @@ Once the server is running, visit:
    curl -X POST "http://localhost:8000/api/v1/auth/register" \
      -H "Content-Type: application/json" \
      -d '{
-       "email": "admin@mdmsga.com",
+       "email": "admin@opendms.com",
        "password": "password123",
        "first_name": "Admin",
        "last_name": "User"
@@ -162,7 +162,7 @@ Once the server is running, visit:
    ```bash
    curl -X POST "http://localhost:8000/api/v1/auth/login" \
      -H "Content-Type: application/x-www-form-urlencoded" \
-     -d "username=admin@mdmsga.com&password=password123"
+     -d "username=admin@opendms.com&password=password123"
    ```
 
 3. **Use token in requests**
@@ -178,7 +178,7 @@ Once the server is running, visit:
 pytest
 
 # Run with coverage
-pytest --cov=mdmsga
+pytest --cov=opendms
 
 # Run specific test
 pytest tests/test_auth.py -v
@@ -188,13 +188,13 @@ pytest tests/test_auth.py -v
 
 ```bash
 # Format and lint code
-ruff check --fix mdmsga tests
+ruff check --fix opendms tests
 
 # Format code only
-ruff format mdmsga tests
+ruff format opendms tests
 
 # Type checking
-mypy mdmsga
+mypy opendms
 
 # Run pre-commit hooks
 pre-commit run --all-files
@@ -203,8 +203,8 @@ pre-commit run --all-files
 ## Project Structure
 
 ```
-mdmsga/
-├── mdmsga/                    # Main application
+opendms/
+├── opendms/                    # Main application
 │   ├── api/                # API endpoints
 │   ├── core/               # Core configuration
 │   ├── models/             # Database models

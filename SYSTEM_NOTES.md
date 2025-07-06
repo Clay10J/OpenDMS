@@ -1,10 +1,10 @@
-# MDMSGA System Notes
+# OpenDMS System Notes
 
-Internal technical documentation for the MDMSGA (Dealer Management System) project.
+Internal technical documentation for the OpenDMS (Dealer Management System) project.
 
 ## Architecture Overview
 
-MDMSGA is a modern DMS built to compete with CDK Global using Python/FastAPI stack.
+OpenDMS is a modern DMS built to compete with CDK Global using Python/FastAPI stack.
 
 ### Core Stack
 
@@ -155,7 +155,7 @@ MDMSGA is a modern DMS built to compete with CDK Global using Python/FastAPI sta
 
 ### HTMX Integration
 
-MDMSGA uses HTMX for dynamic, server-side rendered interfaces that provide:
+OpenDMS uses HTMX for dynamic, server-side rendered interfaces that provide:
 
 - **Real-time Updates**: Dynamic content without page reloads
 - **Mobile-First Design**: Responsive layouts with touch optimization
@@ -165,7 +165,7 @@ MDMSGA uses HTMX for dynamic, server-side rendered interfaces that provide:
 ### Template Structure
 
 ```text
-mdmsga/templates/
+opendms/templates/
 ├── base.html              # Base template with navigation
 ├── dashboard.html         # Main dashboard with stats
 ├── inventory.html         # Vehicle inventory management
@@ -177,7 +177,7 @@ mdmsga/templates/
 ### Static Assets
 
 ```text
-mdmsga/static/
+opendms/static/
 ├── css/
 │   └── app.css           # Custom styles with mobile optimizations
 ├── manifest.json         # PWA manifest
@@ -237,7 +237,7 @@ mdmsga/static/
 
 ```bash
 # Application
-APP_NAME=MDMSGA
+APP_NAME=OpenDMS
 DEBUG=true
 API_V1_STR=/api/v1
 
@@ -248,9 +248,9 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 
 # Database
 POSTGRES_SERVER=localhost
-POSTGRES_USER=mdmsga_user
-POSTGRES_PASSWORD=mdmsga_password
-POSTGRES_DB=mdmsga_db
+POSTGRES_USER=opendms_user
+POSTGRES_PASSWORD=opendms_password
+POSTGRES_DB=opendms_db
 
 # Valkey (Redis-compatible)
 VALKEY_HOST=localhost
@@ -279,7 +279,7 @@ ENABLE_REAL_TIME_UPDATES=true
 - **PWA Manifest**: Configured for mobile installation
 - **Service Worker**: Handles caching and offline functionality
 
-### Settings Class (mdmsga/core/config.py)
+### Settings Class (opendms/core/config.py)
 
 - Pydantic BaseSettings for validation
 - Auto-assembly of connection strings
@@ -369,7 +369,7 @@ indent-style = "space"
 
 ### Networks
 
-- `mdmsga_network` - Internal communication
+- `opendms_network` - Internal communication
 
 ## Deployment Considerations
 
@@ -483,13 +483,13 @@ docker-compose logs api
 docker-compose logs valkey
 
 # Database
-docker-compose exec postgres psql -U mdmsga_user -d mdmsga_db
+docker-compose exec postgres psql -U opendms_user -d opendms_db
 
 # Valkey
 docker-compose exec valkey redis-cli ping
 
 # Application
-uvicorn mdmsga.main:app --reload --log-level debug
+uvicorn opendms.main:app --reload --log-level debug
 ```
 
 ## Performance Notes

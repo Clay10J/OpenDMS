@@ -1,0 +1,223 @@
+{% extends "base.html" %} {% block title %}Dashboard - OpenDMS{% endblock %} {%
+block content %}
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <p class="text-gray-600">
+        Welcome back, {{ current_user.first_name if current_user else 'User' }}
+      </p>
+    </div>
+    <div class="mt-4 md:mt-0">
+      <button
+        hx-get="/api/v1/dashboard/refresh"
+        hx-target="#dashboard-stats"
+        class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
+      >
+        Refresh Data
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div
+    id="dashboard-stats"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+  >
+    <!-- Inventory Stats -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="p-2 bg-blue-100 rounded-lg">
+          <span class="text-2xl">🚗</span>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Total Inventory</p>
+          <p class="text-2xl font-bold text-gray-900">
+            {{ stats.inventory_count if stats else 0 }}
+          </p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <a
+          href="/inventory"
+          class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+        >
+          View Inventory →
+        </a>
+      </div>
+    </div>
+
+    <!-- Customer Stats -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="p-2 bg-green-100 rounded-lg">
+          <span class="text-2xl">👥</span>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Total Customers</p>
+          <p class="text-2xl font-bold text-gray-900">
+            {{ stats.customer_count if stats else 0 }}
+          </p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <a
+          href="/customers"
+          class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+        >
+          View Customers →
+        </a>
+      </div>
+    </div>
+
+    <!-- Sales Stats -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="p-2 bg-yellow-100 rounded-lg">
+          <span class="text-2xl">💰</span>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Monthly Sales</p>
+          <p class="text-2xl font-bold text-gray-900">
+            ${{ "{:,.0f}".format(stats.monthly_sales if stats else 0) }}
+          </p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <a
+          href="/sales"
+          class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+        >
+          View Sales →
+        </a>
+      </div>
+    </div>
+
+    <!-- Service Stats -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border">
+      <div class="flex items-center">
+        <div class="p-2 bg-purple-100 rounded-lg">
+          <span class="text-2xl">🔧</span>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-600">Active Service</p>
+          <p class="text-2xl font-bold text-gray-900">
+            {{ stats.active_service if stats else 0 }}
+          </p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <a
+          href="/service"
+          class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+        >
+          View Service →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Sales -->
+    <div class="bg-white rounded-lg shadow-sm border">
+      <div class="p-6 border-b">
+        <h3 class="text-lg font-semibold text-gray-900">Recent Sales</h3>
+      </div>
+      <div class="p-6">
+        <div id="recent-sales" hx-get="/api/v1/sales/recent" hx-trigger="load">
+          <div class="animate-pulse space-y-4">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Customers -->
+    <div class="bg-white rounded-lg shadow-sm border">
+      <div class="p-6 border-b">
+        <h3 class="text-lg font-semibold text-gray-900">Recent Customers</h3>
+      </div>
+      <div class="p-6">
+        <div
+          id="recent-customers"
+          hx-get="/api/v1/customers/recent"
+          hx-trigger="load"
+        >
+          <div class="animate-pulse space-y-4">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-lg shadow-sm border p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <button
+        hx-get="/inventory/new"
+        hx-target="#modal-content"
+        class="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        <span class="text-2xl mr-3">🚗</span>
+        <div class="text-left">
+          <p class="font-medium text-gray-900">Add Vehicle</p>
+          <p class="text-sm text-gray-600">New inventory</p>
+        </div>
+      </button>
+
+      <button
+        hx-get="/customers/new"
+        hx-target="#modal-content"
+        class="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        <span class="text-2xl mr-3">👤</span>
+        <div class="text-left">
+          <p class="font-medium text-gray-900">Add Customer</p>
+          <p class="text-sm text-gray-600">New customer</p>
+        </div>
+      </button>
+
+      <button
+        hx-get="/sales/new"
+        hx-target="#modal-content"
+        class="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        <span class="text-2xl mr-3">💰</span>
+        <div class="text-left">
+          <p class="font-medium text-gray-900">New Sale</p>
+          <p class="text-sm text-gray-600">Record sale</p>
+        </div>
+      </button>
+
+      <button
+        hx-get="/service/new"
+        hx-target="#modal-content"
+        class="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        <span class="text-2xl mr-3">🔧</span>
+        <div class="text-left">
+          <p class="font-medium text-gray-900">Service Ticket</p>
+          <p class="text-sm text-gray-600">New service</p>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Auto-refresh dashboard every 30 seconds
+  setInterval(function () {
+    htmx.ajax("GET", "/api/v1/dashboard/refresh", {
+      target: "#dashboard-stats",
+    });
+  }, 30000);
+</script>
+{% endblock %}

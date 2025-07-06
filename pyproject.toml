@@ -1,8 +1,8 @@
 [project]
-name = "mdmsga"
+name = "opendms"
 version = "0.1.0"
-description = "Modern Dealer Management System"
-authors = [{ name = "MDMSGA Team", email = "team@mdmsga.com" }]
+description = "OpenDMS - Modern Dealer Management System"
+authors = [{ name = "OpenDMS Team", email = "team@opendms.com" }]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -153,14 +153,14 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=mdmsga",
+    "--cov=opendms",
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-source = ["mdmsga"]
+source = ["opendms"]
 omit = ["*/tests/*", "*/migrations/*", "*/venv/*", "*/env/*"]
 
 [tool.coverage.report]

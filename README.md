@@ -1,4 +1,4 @@
-# MDMSGA - Modern Dealer Management System
+# OpenDMS - Modern Dealer Management System
 
 A next-generation Dealer Management System designed to compete with CDK Global, built with modern Python technologies and cloud-native architecture.
 
@@ -68,7 +68,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd mdmsga
+cd opendms
 
 # Create virtual environment and install dependencies
 uv venv
@@ -96,7 +96,7 @@ cp .env.example .env
 alembic upgrade head
 
 # Create initial superuser
-python -m mdmsga.cli create-superuser
+python -m opendms.cli create-superuser
 ```
 
 ## Running the Application
@@ -105,24 +105,50 @@ python -m mdmsga.cli create-superuser
 
 ```bash
 # Start the FastAPI development server
-uvicorn mdmsga.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn opendms.main:app --reload --host 0.0.0.0 --port 8000
 
 # Start Celery worker (in another terminal)
-celery -A mdmsga.celery_app worker --loglevel=info
+celery -A opendms.celery_app worker --loglevel=info
 
 # Start Celery beat for scheduled tasks (in another terminal)
-celery -A mdmsga.celery_app beat --loglevel=info
+celery -A opendms.celery_app beat --loglevel=info
 ```
 
 ### Production
 
 ```bash
 # Using Gunicorn
-gunicorn mdmsga.main:app -w 4 -k uvicorn.workers.UvicornWorker
+gunicorn opendms.main:app -w 4 -k uvicorn.workers.UvicornWorker
 
 # Using Docker
 docker-compose up -d
 ```
+
+### Docker Security
+
+⚠️ **Important Security Notes for Docker:**
+
+1. **Environment Variables**: The docker-compose.yml uses environment variables with fallback values. For production:
+
+   ```bash
+   # Set secure environment variables before running
+   export POSTGRES_PASSWORD="your-secure-password"
+   export SECRET_KEY="your-secure-secret-key"
+   docker-compose up -d
+   ```
+
+2. **Never commit real passwords**: The docker-compose.yml contains default/development values that are safe to commit, but you should override them in production.
+
+3. **Use Docker secrets**: For production deployments, consider using Docker secrets or external secret management systems.
+
+4. **Network security**: The default setup exposes database ports (5432, 6379) for development. In production, remove these port mappings and use internal networking only.
+
+5. **Development vs Production**: The application uses `DEBUG=true` and allows all hosts in development mode. Ensure these are properly configured for production:
+   ```bash
+   # Production environment variables
+   export DEBUG=false
+   export BACKEND_CORS_ORIGINS="https://yourdomain.com,https://api.yourdomain.com"
+   ```
 
 ## API Documentation
 
@@ -139,7 +165,7 @@ Once the server is running, visit:
 pytest
 
 # Run with coverage
-pytest --cov=mdmsga
+pytest --cov=opendms
 
 # Run specific test file
 pytest tests/test_auth.py
@@ -154,13 +180,13 @@ pytest -v
 
 ```bash
 # Format and lint code
-ruff check --fix mdmsga tests
+ruff check --fix opendms tests
 
 # Format code only
-ruff format mdmsga tests
+ruff format opendms tests
 
 # Type checking
-mypy mdmsga
+mypy opendms
 ```
 
 ### Pre-commit Hooks
@@ -189,8 +215,8 @@ alembic downgrade -1
 ## Project Structure
 
 ```
-mdmsga/
-├── mdmsga/                    # Main application package
+opendms/
+├── opendms/                    # Main application package
 │   ├── api/                # API routes and endpoints
 │   │   ├── v1/            # API version 1
 │   │   └── deps.py        # Dependencies and middleware

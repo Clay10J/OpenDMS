@@ -229,8 +229,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # PWA and static assets (keep manifest and service worker, ignore generated icons)
-mdmsga/static/icons/*.png
-mdmsga/static/screenshots/*.png
+opendms/static/icons/*.png
+opendms/static/screenshots/*.png
 
 # Environment files (keep example)
 .env.local

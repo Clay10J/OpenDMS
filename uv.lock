@@ -883,7 +883,7 @@ wheels = [
 ]
 
 [[package]]
-name = "mdmsga"
+name = "opendms"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

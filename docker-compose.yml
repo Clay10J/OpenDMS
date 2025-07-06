@@ -1,23 +1,25 @@
-version: "3.8"
-
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: mdmsga_postgres
+    container_name: opendms_postgres
     environment:
-      POSTGRES_DB: mdmsga_db
-      POSTGRES_USER: mdmsga_user
-      POSTGRES_PASSWORD: mdmsga_password
+      POSTGRES_DB: ${POSTGRES_DB:-opendms_db}
+      POSTGRES_USER: ${POSTGRES_USER:-opendms_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opendms_password}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - mdmsga_network
+      - opendms_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mdmsga_user -d mdmsga_db"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-opendms_user} -d ${POSTGRES_DB:-opendms_db}",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -25,112 +27,109 @@ services:
   # Valkey Cache (Redis-compatible)
   valkey:
     image: valkey/valkey:7-alpine
-    container_name: mdmsga_valkey
+    container_name: opendms_valkey
     ports:
       - "6379:6379"
     volumes:
       - valkey_data:/data
     networks:
-      - mdmsga_network
+      - opendms_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # MDMSGA API
+  # OpenDMS API
   api:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: mdmsga_api
+    container_name: opendms_api
     environment:
       - POSTGRES_SERVER=postgres
-      - POSTGRES_USER=mdmsga_user
-      - POSTGRES_PASSWORD=mdmsga_password
-      - POSTGRES_DB=mdmsga_db
+      - POSTGRES_USER=${POSTGRES_USER:-opendms_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-opendms_password}
+      - POSTGRES_DB=${POSTGRES_DB:-opendms_db}
       - POSTGRES_PORT=5432
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
       - VALKEY_DB=0
-      - DEBUG=true
-      - SECRET_KEY=your-super-secret-key-here-change-in-production
+      - DEBUG=${DEBUG:-true}
+      - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-here-change-in-production}
     ports:
       - "8000:8000"
     volumes:
       - ./uploads:/app/uploads
-      - ./.env:/app/.env
     depends_on:
       postgres:
         condition: service_healthy
       valkey:
         condition: service_healthy
     networks:
-      - mdmsga_network
-    command: uvicorn mdmsga.main:app --host 0.0.0.0 --port 8000 --reload
+      - opendms_network
+    command: uvicorn opendms.main:app --host 0.0.0.0 --port 8000 --reload
 
   # Celery Worker
   celery_worker:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: mdmsga_celery_worker
+    container_name: opendms_celery_worker
     environment:
       - POSTGRES_SERVER=postgres
-      - POSTGRES_USER=mdmsga_user
-      - POSTGRES_PASSWORD=mdmsga_password
-      - POSTGRES_DB=mdmsga_db
+      - POSTGRES_USER=${POSTGRES_USER:-opendms_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-opendms_password}
+      - POSTGRES_DB=${POSTGRES_DB:-opendms_db}
       - POSTGRES_PORT=5432
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
       - VALKEY_DB=0
-      - DEBUG=true
-      - SECRET_KEY=your-super-secret-key-here-change-in-production
+      - DEBUG=${DEBUG:-true}
+      - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-here-change-in-production}
     volumes:
       - ./uploads:/app/uploads
-      - ./.env:/app/.env
     depends_on:
       postgres:
         condition: service_healthy
       valkey:
         condition: service_healthy
     networks:
-      - mdmsga_network
-    command: celery -A mdmsga.celery_app worker --loglevel=info
+      - opendms_network
+    command: celery -A opendms.celery_app worker --loglevel=info
 
   # Celery Beat (Scheduler)
   celery_beat:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    container_name: mdmsga_celery_beat
+    container_name: opendms_celery_beat
     environment:
       - POSTGRES_SERVER=postgres
-      - POSTGRES_USER=mdmsga_user
-      - POSTGRES_PASSWORD=mdmsga_password
-      - POSTGRES_DB=mdmsga_db
+      - POSTGRES_USER=${POSTGRES_USER:-opendms_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-opendms_password}
+      - POSTGRES_DB=${POSTGRES_DB:-opendms_db}
       - POSTGRES_PORT=5432
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
       - VALKEY_DB=0
-      - DEBUG=true
-      - SECRET_KEY=your-super-secret-key-here-change-in-production
+      - DEBUG=${DEBUG:-true}
+      - SECRET_KEY=${SECRET_KEY:-your-super-secret-key-here-change-in-production}
     volumes:
       - ./uploads:/app/uploads
-      - ./.env:/app/.env
     depends_on:
       postgres:
         condition: service_healthy
       valkey:
         condition: service_healthy
     networks:
-      - mdmsga_network
-    command: celery -A mdmsga.celery_app beat --loglevel=info
+      - opendms_network
+    command: celery -A opendms.celery_app beat --loglevel=info
 
 volumes:
   postgres_data:
   valkey_data:
 
 networks:
-  mdmsga_network:
+  opendms_network:
     driver: bridge
